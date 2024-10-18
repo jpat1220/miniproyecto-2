@@ -30,7 +30,7 @@ public class GameStage extends Stage {
         gameController = loader.getController();
         Scene scene = new Scene(root);
         setScene(scene);
-        setTitle("El Sol Eclipsado");
+        setTitle("Sudoku!");
         getIcons().add(new Image(String.valueOf(
                 getClass().getResource("/com/example/miniproyecto2/img/favicon.png"))
         ));
