@@ -34,7 +34,7 @@
                         <DropShadow />
                      </effect>
                   </Label>
-                  <Button fx:id="helpButton" mnemonicParsing="false" style="-fx-background-color: #8c242f; -fx-border-color: #0d0b0c; -fx-border-radius: 50; -fx-background-radius: 50;" text="Ayuda" textFill="WHITE">
+                  <Button fx:id="helpButton" mnemonicParsing="false" onAction="#handleHelpButton" style="-fx-background-color: #8c242f; -fx-border-color: #0d0b0c; -fx-border-radius: 50; -fx-background-radius: 50;" text="Ayuda" textFill="WHITE">
                      <font>
                         <Font name="Berlin Sans FB" size="20.0" />
                      </font>
