@@ -1,10 +1,13 @@
 package com.example.miniproyecto2.controller;
 
 import com.example.miniproyecto2.model.Game;
+import com.example.miniproyecto2.view.GameStage;
+import com.example.miniproyecto2.view.WelcomeStage;
+import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.Alert;
 import javafx.scene.control.TextField;
-import javafx.scene.control.Label; // Importa Label para el helpLabel
+import javafx.scene.control.Label;
 import javafx.scene.input.KeyEvent;
 import javafx.event.EventHandler;
 import javafx.scene.layout.GridPane;
@@ -12,95 +15,114 @@ import javafx.scene.Node;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 
+import java.io.IOException;
 import java.util.Random;
 
+/**
+ * Controller for the Game stage of the Sudoku application.
+ */
 public class GameController {
-    private Game game; // Instancia de Game
+    private Game game;
 
     @FXML
-    private GridPane gridPane; // GridPane donde se mostrará el tablero
+    private GridPane gridPane;
 
     @FXML
-    private Label helpLabel; // Label para mostrar las ayudas restantes
+    private Label helpLabel;
 
-    // Método para inicializar el juego
+    /**
+     * Initializes the game.
+     *
+     * @param game the Game instance to be set.
+     */
     public void setGame(Game game) {
-        this.game = game; // Crear una instancia de Game
-        initializeBoard(); // Inicializar el tablero
-        updateHelpLabel(); // Actualizar el label de ayuda al inicio
+        this.game = game;
+        initializeBoard();
+        updateHelpLabel();
     }
 
-    // Inicializa el tablero en la interfaz gráfica
+    /**
+     * Initializes the board in the graphical interface.
+     */
     private void initializeBoard() {
-        game.initializeBoard(); // Inicializar el tablero en el modelo
-        int[][] board = game.getBoard(); // Obtener el tablero
+        game.initializeBoard();
+        int[][] board = game.getBoard();
 
-        // Rellenar el GridPane con TextFields para cada celda del tablero
         for (int row = 0; row < board.length; row++) {
             for (int col = 0; col < board[row].length; col++) {
                 TextField cell = new TextField();
                 if (board[row][col] != 0) {
                     cell.setText(String.valueOf(board[row][col]));
-                    cell.setEditable(false); // No editable si el valor es mayor que 0
+                    cell.setEditable(false);
                 } else {
-                    cell.clear(); // Limpiar para celdas que pueden ser editadas
-                    handleTextField(cell, row, col); // Manejar eventos para celdas editables
+                    cell.clear();
+                    handleTextField(cell, row, col);
                 }
-                styleTextField(cell); // Aplicar estilos a las celdas
-                gridPane.add(cell, col, row); // Agregar la celda al GridPane
+                styleTextField(cell);
+                gridPane.add(cell, col, row);
+                gridPane.setGridLinesVisible(true);
             }
         }
     }
 
-    // Método para manejar los eventos de las celdas
+    /**
+     * Handles the events of the cells.
+     *
+     * @param cell the TextField representing the cell.
+     * @param row  the row index of the cell.
+     * @param col  the column index of the cell.
+     */
     private void handleTextField(TextField cell, int row, int col) {
         cell.setOnKeyReleased(new EventHandler<KeyEvent>() {
             @Override
             public void handle(KeyEvent keyEvent) {
                 String inputText = cell.getText();
 
-                if (inputText.matches("[1-6]")) { // Verificar si el número es válido (1-6)
+                if (inputText.matches("[1-6]")) {
                     if (game.validateMove(inputText, cell)) {
-                        game.makeMove(inputText, row, col); // Realizar el movimiento
-                        cell.setStyle("-fx-text-fill: white; -fx-background-color: transparent;"); // Texto blanco, sin fondo
-                        highlightConflictingNumbers(cell, row, col); // Resaltar conflictos
+                        game.makeMove(inputText, row, col);
+                        cell.setStyle("-fx-text-fill: white; -fx-background-color: transparent;");
+                        highlightConflictingNumbers(cell, row, col);
 
-                        // Verificar si el juego ha terminado
                         if (game.isGameOver()) {
-                            showVictoryMessage(); // Mostrar mensaje de victoria
+                            showVictoryMessage();
                         }
                     } else {
-                        cell.setStyle("-fx-text-fill: red; -fx-background-color: transparent;"); // Texto rojo si es inválido
+                        cell.setStyle("-fx-text-fill: red; -fx-background-color: transparent;");
                     }
                 } else {
-                    cell.clear(); // Limpiar el campo si no es un número válido
-                    resetHighlighting(); // Limpia todos los estilos
+                    cell.clear();
+                    resetHighlighting();
                 }
             }
         });
     }
 
-    // Método para resaltar números en conflicto
+    /**
+     * Highlights conflicting numbers.
+     *
+     * @param currentCell the TextField representing the current cell.
+     * @param row         the row index of the current cell.
+     * @param col         the column index of the current cell.
+     */
     private void highlightConflictingNumbers(TextField currentCell, int row, int col) {
         int currentValue;
-        try {
+        if (!currentCell.getText().isEmpty()) {
             currentValue = Integer.parseInt(currentCell.getText());
-        } catch (NumberFormatException e) {
-            return; // Si no hay número, salir del método
+        } else {
+            return;
         }
 
-        // Limpiar el resaltado antes de verificar nuevos conflictos
         resetHighlighting();
 
-        // Resaltar filas y columnas
         for (int i = 0; i < 6; i++) {
             if (i != col) {
                 Node cellNode = getNodeByRowColumnIndex(row, i, gridPane);
                 if (cellNode instanceof TextField) {
                     TextField cell = (TextField) cellNode;
                     if (cell.getText().equals(String.valueOf(currentValue))) {
-                        cell.setStyle("-fx-background-color: red;"); // Resaltar celda en conflicto
-                        currentCell.setStyle("-fx-background-color: red;"); // Resaltar la celda actual también
+                        cell.setStyle("-fx-background-color: red;");
+                        currentCell.setStyle("-fx-background-color: red;");
                     }
                 }
             }
@@ -109,14 +131,13 @@ public class GameController {
                 if (cellNode instanceof TextField) {
                     TextField cell = (TextField) cellNode;
                     if (cell.getText().equals(String.valueOf(currentValue))) {
-                        cell.setStyle("-fx-background-color: red;"); // Resaltar celda en conflicto
-                        currentCell.setStyle("-fx-background-color: red;"); // Resaltar la celda actual también
+                        cell.setStyle("-fx-background-color: red;");
+                        currentCell.setStyle("-fx-background-color: red;");
                     }
                 }
             }
         }
 
-        // Resaltar en el bloque 2x3
         int blockStartRow = (row / 2) * 2;
         int blockStartCol = (col / 3) * 3;
         for (int r = blockStartRow; r < blockStartRow + 2; r++) {
@@ -126,8 +147,8 @@ public class GameController {
                     if (cellNode instanceof TextField) {
                         TextField cell = (TextField) cellNode;
                         if (cell.getText().equals(String.valueOf(currentValue))) {
-                            cell.setStyle("-fx-background-color: red;"); // Resaltar celda en conflicto
-                            currentCell.setStyle("-fx-background-color: red;"); // Resaltar la celda actual también
+                            cell.setStyle("-fx-background-color: red;");
+                            currentCell.setStyle("-fx-background-color: red;");
                         }
                     }
                 }
@@ -135,38 +156,50 @@ public class GameController {
         }
     }
 
-    // Método para obtener el nodo por su índice de fila y columna
+    /**
+     * Gets the node by its row and column index.
+     *
+     * @param row      the row index of the node.
+     * @param col      the column index of the node.
+     * @param gridPane the GridPane containing the nodes.
+     * @return the Node if found, null otherwise.
+     */
     private Node getNodeByRowColumnIndex(int row, int col, GridPane gridPane) {
         for (Node node : gridPane.getChildren()) {
             Integer nodeRowIndex = GridPane.getRowIndex(node);
             Integer nodeColIndex = GridPane.getColumnIndex(node);
 
-            // Comprobar si los índices son nulos y asignar un valor por defecto
             if (nodeRowIndex == null) {
-                nodeRowIndex = 0; // O un valor que tenga sentido para ti
+                nodeRowIndex = 0;
             }
             if (nodeColIndex == null) {
-                nodeColIndex = 0; // O un valor que tenga sentido para ti
+                nodeColIndex = 0;
             }
 
             if (nodeRowIndex == row && nodeColIndex == col) {
-                return node; // Retornar el nodo si coincide con la fila y columna
+                return node;
             }
         }
-        return null; // Retornar nulo si no se encuentra el nodo
+        return null;
     }
 
-    // Método para aplicar estilos a los TextFields
+    /**
+     * Applies styles to the TextFields.
+     *
+     * @param cell the TextField to be styled.
+     */
     private void styleTextField(TextField cell) {
-        cell.setFont(Font.font("Berlin Sans FB", 24)); // Establecer la fuente
-        cell.setStyle("-fx-background-color: transparent; -fx-text-fill: white;"); // Estilo del TextField
-        cell.setPrefSize(50, 50); // Tamaño preferido
-        cell.setAlignment(javafx.geometry.Pos.CENTER); // Alinear texto al centro
+        gridPane.setGridLinesVisible(true);
+        cell.setFont(Font.font("Berlin Sans FB", 24));
+        cell.setStyle("-fx-background-color: transparent; -fx-text-fill: white;");
+        cell.setPrefSize(50, 50);
+        cell.setAlignment(javafx.geometry.Pos.CENTER);
     }
 
-    // Método para restablecer resaltados
+    /**
+     * Resets the highlighting of cells.
+     */
     private void resetHighlighting() {
-        // Limpia todos los estilos de las celdas
         for (Node node : gridPane.getChildren()) {
             if (node instanceof TextField) {
                 node.setStyle("-fx-background-color: transparent; -fx-text-fill: white;");
@@ -174,58 +207,96 @@ public class GameController {
         }
     }
 
-    // Método para solicitar ayuda
+    /**
+     * Handles the help button action.
+     */
     public void handleHelpButton() {
-        if (game.getHelpUsed() < 6) { // Verifica que no se hayan usado más de 6 ayudas
-            // Obtener una posición aleatoria
-            placeRandomHelpNumber(); // Llama al método para colocar el número de ayuda
-            game.incrementHelpUsed(); // Incrementa el número de ayudas usadas
-            updateHelpLabel(); // Actualiza el label de ayuda
+        if (game.getHelpUsed() < 6) {
+            if (!game.isBoardFull()) {
+                placeRandomHelpNumber();
+                game.incrementHelpUsed();
+                updateHelpLabel();
+            }
         } else {
-            // Aquí puedes agregar lógica si se intentan usar más de 6 ayudas, si lo deseas
-            System.out.println("No quedan ayudas disponibles."); // Mensaje de aviso (opcional)
+            System.out.println("No quedan ayudas disponibles.");
         }
     }
 
-    // Método que coloca un número de ayuda en una celda aleatoria
+    /**
+     * Places a help number in a random empty cell.
+     */
     private void placeRandomHelpNumber() {
-        int[][] board = game.getBoard(); // Obtener el tablero
+        int[][] board = game.getBoard();
         Random random = new Random();
         int row, col;
         int number;
 
-        // Busca una celda vacía aleatoria donde colocar el número de ayuda
         do {
-            row = random.nextInt(6); // Generar fila aleatoria
-            col = random.nextInt(6); // Generar columna aleatoria
-            number = getValidNumber(); // Obtener un número válido del 1 al 6
-        } while (!game.isValidMove(number, row, col) || board[row][col] != 0); // Verifica si la posición es válida
+            row = random.nextInt(6);
+            col = random.nextInt(6);
+            number = getValidNumber();
+        } while (!game.isValidMove(number, row, col) || board[row][col] != 0);
 
-        // Colocar el número de ayuda en la celda
         TextField cell = (TextField) getNodeByRowColumnIndex(row, col, gridPane);
         if (cell != null) {
-            cell.setText(String.valueOf(number)); // Establece el número de ayuda
-            game.makeMove(String.valueOf(number), row, col); // Realiza el movimiento en el modelo
-            highlightConflictingNumbers(cell, row, col); // Resalta si hay conflictos
+            cell.setText(String.valueOf(number));
+            game.makeMove(String.valueOf(number), row, col);
+            highlightConflictingNumbers(cell, row, col);
         }
     }
 
-    // Método que obtiene un número válido (1-6)
+    /**
+     * Gets a valid number between 1 and 6.
+     *
+     * @return a random number between 1 and 6.
+     */
     private int getValidNumber() {
-        return new Random().nextInt(6) + 1; // Retorna un número entre 1 y 6
+        return new Random().nextInt(6) + 1;
     }
 
-    // Método que actualiza el label de ayudas
+    /**
+     * Updates the help label.
+     */
     private void updateHelpLabel() {
-        helpLabel.setText("Ayudas restantes: " + (6 - game.getHelpUsed())); // Actualiza el texto del label
+        helpLabel.setText("Ayudas restantes: " + (6 - game.getHelpUsed()));
     }
 
-    // Método para mostrar mensaje de victoria
+    /**
+     * Shows a victory message.
+     */
     private void showVictoryMessage() {
         Alert alert = new Alert(Alert.AlertType.INFORMATION);
         alert.setTitle("¡Victoria!");
         alert.setHeaderText(null);
         alert.setContentText("¡Felicidades, has completado el Sudoku!");
         alert.showAndWait();
+    }
+
+    /**
+     * Handles the restart button action.
+     *
+     * @param event the ActionEvent triggered by the button.
+     * @throws IOException if an input or output error occurs.
+     */
+    @FXML
+    public void handleRestartButton(ActionEvent event) throws IOException {
+        gridPane.getChildren().clear();
+        game.clearBoard();
+        game.initializeBoard();
+        initializeBoard();
+        updateHelpLabel();
+        gridPane.setGridLinesVisible(true);
+    }
+
+    /**
+     * Handles the exit button action.
+     *
+     * @param event the ActionEvent triggered by the button.
+     * @throws IOException if an input or output error occurs.
+     */
+    @FXML
+    public void handleExitButton(ActionEvent event) throws IOException {
+        GameStage.deletedInstance();
+
     }
 }
