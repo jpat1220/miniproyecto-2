@@ -2,6 +2,7 @@ package com.example.miniproyecto2.controller;
 
 import com.example.miniproyecto2.model.Game;
 import javafx.fxml.FXML;
+import javafx.scene.control.Alert;
 import javafx.scene.control.TextField;
 import javafx.scene.control.Label; // Importa Label para el helpLabel
 import javafx.scene.input.KeyEvent;
@@ -63,6 +64,11 @@ public class GameController {
                         game.makeMove(inputText, row, col); // Realizar el movimiento
                         cell.setStyle("-fx-text-fill: white; -fx-background-color: transparent;"); // Texto blanco, sin fondo
                         highlightConflictingNumbers(cell, row, col); // Resaltar conflictos
+
+                        // Verificar si el juego ha terminado
+                        if (game.isGameOver()) {
+                            showVictoryMessage(); // Mostrar mensaje de victoria
+                        }
                     } else {
                         cell.setStyle("-fx-text-fill: red; -fx-background-color: transparent;"); // Texto rojo si es inválido
                     }
@@ -193,27 +199,33 @@ public class GameController {
             row = random.nextInt(6); // Generar fila aleatoria
             col = random.nextInt(6); // Generar columna aleatoria
             number = getValidNumber(); // Obtener un número válido del 1 al 6
-        } while (!game.isValidMove(number, row, col) || board[row][col] != 0); // Asegurarse que la celda esté vacía
+        } while (!game.isValidMove(number, row, col) || board[row][col] != 0); // Verifica si la posición es válida
 
-        // Colocar el número en la celda
-        game.makeMove(String.valueOf(number), row, col); // Hacer el movimiento en el modelo
-
-        // Actualizar la interfaz gráfica
+        // Colocar el número de ayuda en la celda
         TextField cell = (TextField) getNodeByRowColumnIndex(row, col, gridPane);
         if (cell != null) {
-            cell.setText(String.valueOf(number)); // Mostrar el número en la celda
-            cell.setEditable(false); // No editable
-            cell.setStyle("-fx-text-fill: white; -fx-background-color: transparent;"); // Restablecer estilo
+            cell.setText(String.valueOf(number)); // Establece el número de ayuda
+            game.makeMove(String.valueOf(number), row, col); // Realiza el movimiento en el modelo
+            highlightConflictingNumbers(cell, row, col); // Resalta si hay conflictos
         }
     }
 
-    // Método para obtener un número válido
+    // Método que obtiene un número válido (1-6)
     private int getValidNumber() {
-        return new Random().nextInt(6) + 1; // Números del 1 al 6
+        return new Random().nextInt(6) + 1; // Retorna un número entre 1 y 6
     }
 
-    // Método para actualizar el label de ayuda
+    // Método que actualiza el label de ayudas
     private void updateHelpLabel() {
-        helpLabel.setText("Ayudas restantes: " + (6 - game.getHelpUsed())); // Actualizar el texto del label de ayuda
+        helpLabel.setText("Ayudas restantes: " + (6 - game.getHelpUsed())); // Actualiza el texto del label
+    }
+
+    // Método para mostrar mensaje de victoria
+    private void showVictoryMessage() {
+        Alert alert = new Alert(Alert.AlertType.INFORMATION);
+        alert.setTitle("¡Victoria!");
+        alert.setHeaderText(null);
+        alert.setContentText("¡Felicidades, has completado el Sudoku!");
+        alert.showAndWait();
     }
 }
