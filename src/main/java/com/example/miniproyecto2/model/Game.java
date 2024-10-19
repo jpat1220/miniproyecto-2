@@ -19,8 +19,7 @@ public class Game implements IGame {
 
     @Override
     public boolean validateMove(String move, TextField textField) {
-        // Aquí puedes implementar la validación del movimiento
-        // Por ahora, podemos hacer una simple validación de que el número es del 1 al 6
+        // Validación de que el número es del 1 al 6
         int value;
         try {
             value = Integer.parseInt(move);
@@ -31,8 +30,12 @@ public class Game implements IGame {
     }
 
     @Override
-    public void makeMove(String move) {
+    public void makeMove(String move, int row, int col) {
         // Aquí puedes implementar la lógica para hacer un movimiento
+        int value = Integer.parseInt(move);
+        if (isValidMove(value, row, col)) {
+            board[row][col] = value; // Coloca el número en la posición
+        }
     }
 
     @Override
@@ -48,7 +51,14 @@ public class Game implements IGame {
     @Override
     public boolean isGameOver() {
         // Aquí puedes implementar la lógica para verificar si el juego ha terminado
-        return false; // Retorna falso por ahora
+        for (int[] row : board) {
+            for (int num : row) {
+                if (num == 0) {
+                    return false; // Hay celdas vacías, el juego no ha terminado
+                }
+            }
+        }
+        return true; // No hay celdas vacías, el juego ha terminado
     }
 
     private void fillBoard() {
@@ -127,5 +137,46 @@ public class Game implements IGame {
             }
         }
         return false;
+    }
+
+    public void makeHelpMove() {
+        Random rand = new Random();
+        int row, col;
+
+        // Intentar colocar un número en una posición aleatoria
+        for (int attempt = 0; attempt < 100; attempt++) {
+            row = rand.nextInt(6);
+            col = rand.nextInt(6);
+
+            // Verificar si la celda está vacía
+            if (board[row][col] == 0) {
+                // Elegir un número aleatorio del 1 al 6
+                int number = rand.nextInt(6) + 1;
+
+                // Verificar si el número es válido
+                if (isValidMove(number, row, col)) {
+                    board[row][col] = number; // Colocar el número en el tablero
+                    helpUsed++; // Incrementar el contador de ayudas
+                    break; // Salir después de colocar un número
+                }
+            }
+        }
+    }
+
+    public boolean isValidMove(int number, int row, int col) {
+        // Comprobar fila y columna
+        if (isNumberInRow(row, number) || isNumberInCol(col, number)) {
+            return false; // Movimiento inválido
+        }
+
+        // Comprobar subcuadro de 2x3
+        int startRow = (row / 2) * 2;
+        int startCol = (col / 3) * 3;
+
+        return !isNumberInBlock(startRow, startCol, number); // Retorna verdadero si el movimiento es válido
+    }
+
+    public void incrementHelpUsed() {
+        helpUsed++;
     }
 }
