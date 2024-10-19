@@ -50,16 +50,28 @@ public class Game implements IGame {
 
     @Override
     public boolean isGameOver() {
-        // Aquí puedes implementar la lógica para verificar si el juego ha terminado
-        for (int[] row : board) {
-            for (int num : row) {
-                if (num == 0) {
+        // Verificar si todas las celdas están llenas
+        for (int row = 0; row < 6; row++) {
+            for (int col = 0; col < 6; col++) {
+                if (board[row][col] == 0) {
                     return false; // Hay celdas vacías, el juego no ha terminado
                 }
             }
         }
-        return true; // No hay celdas vacías, el juego ha terminado
+
+        // Verificar si todos los números son válidos
+        for (int row = 0; row < 6; row++) {
+            for (int col = 0; col < 6; col++) {
+                int number = board[row][col];
+                if (!isValidMove(number, row, col)) {
+                    return false; // Hay un número inválido en el tablero
+                }
+            }
+        }
+
+        return true; // Todas las celdas están llenas y son válidas
     }
+
 
     private void fillBoard() {
         Random random = new Random();
