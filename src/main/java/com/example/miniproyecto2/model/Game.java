@@ -3,86 +3,110 @@ package com.example.miniproyecto2.model;
 import javafx.scene.control.TextField;
 import java.util.Random;
 
+/**
+ * Implements the game logic for the Sudoku application.
+ */
 public class Game implements IGame {
     private int[][] board;
     private int helpUsed;
 
+    /**
+     * Constructs a new Game instance, initializing the board and helpUsed.
+     */
     public Game() {
-        this.board = new int[6][6]; // Inicializa el tablero 6x6
+        this.board = new int[6][6];
         this.helpUsed = 0;
     }
 
+    /**
+     * Initializes the Sudoku board with valid numbers.
+     */
     @Override
     public void initializeBoard() {
-        fillBoard(); // Llenar el tablero con números válidos
+        fillBoard();
     }
 
+    /**
+     * Validates the move made in the given TextField.
+     *
+     * @param move     the move to validate as a String.
+     * @param textField the TextField associated with the move.
+     * @return true if the move is valid (1 to 6), false otherwise.
+     */
     @Override
     public boolean validateMove(String move, TextField textField) {
-        // Validación de que el número es del 1 al 6
-        int value;
-        try {
-            value = Integer.parseInt(move);
-            return value >= 1 && value <= 6; // Solo se permiten números del 1 al 6
-        } catch (NumberFormatException e) {
-            return false; // No es un número válido
+        if (move == null || move.isEmpty()) {
+            return false; // Return false if move is null or empty
         }
+        // Check if the move is a valid integer within the range 1 to 6
+        return move.matches("[1-6]");
     }
 
+    /**
+     * Makes a move on the board at the specified row and column.
+     *
+     * @param move the value to place on the board.
+     * @param row  the row where the move will be made.
+     * @param col  the column where the move will be made.
+     */
     @Override
     public void makeMove(String move, int row, int col) {
-        // Aquí puedes implementar la lógica para hacer un movimiento
         int value = Integer.parseInt(move);
         if (isValidMove(value, row, col)) {
-            board[row][col] = value; // Coloca el número en la posición
+            board[row][col] = value;
         }
     }
 
+    /**
+     * Gets the current state of the board.
+     *
+     * @return a 2D array representing the board.
+     */
     @Override
     public int[][] getBoard() {
-        return board; // Retorna el tablero actual
+        return board;
     }
 
+    /**
+     * Gets the number of help used in the game.
+     *
+     * @return the count of help used.
+     */
     @Override
     public int getHelpUsed() {
-        return helpUsed; // Retorna el número de ayudas utilizadas
+        return helpUsed;
     }
 
+    /**
+     * Checks if the game is over by verifying if the board is full and valid.
+     *
+     * @return true if the game is over, false otherwise.
+     */
     @Override
     public boolean isGameOver() {
-        // Verificar si todas las celdas están llenas
-        for (int row = 0; row < 6; row++) {
-            for (int col = 0; col < 6; col++) {
-                if (board[row][col] == 0) {
-                    return false; // Hay celdas vacías, el juego no ha terminado
+        if (isBoardFull()) {
+            for (int row = 0; row < 6; row++) {
+                for (int col = 0; col < 6; col++) {
+                    int number = board[row][col];
+                    if (isNumberInRow(row, number) ||
+                            isNumberInCol(col, number) ||
+                            isNumberInBlock((row / 2) * 2, (col / 3) * 3, number)) {
+                        return false;
+                    }
                 }
             }
+            return true;
         }
-
-        // Verificar si todos los números son válidos
-        for (int row = 0; row < 6; row++) {
-            for (int col = 0; col < 6; col++) {
-                int number = board[row][col];
-                if (!isValidMove(number, row, col)) {
-                    return false; // Hay un número inválido en el tablero
-                }
-            }
-        }
-
-        return true; // Todas las celdas están llenas y son válidas
+        return false;
     }
-
 
     private void fillBoard() {
         Random random = new Random();
-        // Limpiar el tablero
         for (int row = 0; row < 6; row++) {
             for (int col = 0; col < 6; col++) {
-                board[row][col] = 0; // Inicializa todas las celdas en 0
+                board[row][col] = 0;
             }
         }
-
-        // Llenar el tablero asegurando que cada bloque 2x3 tenga solo 2 números
         for (int blockRow = 0; blockRow < 3; blockRow++) {
             for (int blockCol = 0; blockCol < 2; blockCol++) {
                 placeNumbersInBlock(blockRow * 2, blockCol * 3, random);
@@ -91,32 +115,27 @@ public class Game implements IGame {
     }
 
     private void placeNumbersInBlock(int startRow, int startCol, Random random) {
-        int[] numbers = {1, 2, 3, 4, 5, 6}; // Números del Sudoku
-        int count = 0; // Contador de números colocados
+        int[] numbers = {1, 2, 3, 4, 5, 6};
+        int count = 0;
 
-        // Intentar colocar 2 números en posiciones válidas
         while (count < 2) {
-            int number = numbers[random.nextInt(6)]; // Seleccionar un número aleatorio
-            boolean placedSuccessfully = false; // Para verificar si se colocó exitosamente
+            int number = numbers[random.nextInt(6)];
+            boolean placedSuccessfully = false;
 
-            // Probar cada posición en el bloque 2x3
             for (int row = startRow; row < startRow + 2; row++) {
                 for (int col = startCol; col < startCol + 3; col++) {
-                    // Verificar si la posición es válida
                     if (board[row][col] == 0 &&
                             !isNumberInRow(row, number) &&
                             !isNumberInCol(col, number) &&
-                            !isNumberInBlock(startRow, startCol, number)) { // Verificar también en el bloque
-
-                        // Colocar el número en la posición actual
+                            !isNumberInBlock(startRow, startCol, number)) {
                         board[row][col] = number;
-                        placedSuccessfully = true; // Se colocó exitosamente
-                        count++; // Incrementar el contador
-                        break; // Salir del bucle de columnas
+                        placedSuccessfully = true;
+                        count++;
+                        break;
                     }
                 }
                 if (placedSuccessfully) {
-                    break; // Salir del bucle de filas si se colocó el número
+                    break;
                 }
             }
         }
@@ -125,7 +144,7 @@ public class Game implements IGame {
     private boolean isNumberInRow(int row, int number) {
         for (int col = 0; col < 6; col++) {
             if (board[row][col] == number) {
-                return true; // El número ya está en la fila
+                return true;
             }
         }
         return false;
@@ -134,7 +153,7 @@ public class Game implements IGame {
     private boolean isNumberInCol(int col, int number) {
         for (int row = 0; row < 6; row++) {
             if (board[row][col] == number) {
-                return true; // El número ya está en la columna
+                return true;
             }
         }
         return false;
@@ -144,51 +163,87 @@ public class Game implements IGame {
         for (int row = startRow; row < startRow + 2; row++) {
             for (int col = startCol; col < startCol + 3; col++) {
                 if (board[row][col] == number) {
-                    return true; // El número ya está en el bloque
+                    return true;
                 }
             }
         }
         return false;
     }
 
+    /**
+     * Makes a help move by placing a number in a random empty position.
+     */
     public void makeHelpMove() {
         Random rand = new Random();
         int row, col;
 
-        // Intentar colocar un número en una posición aleatoria
         for (int attempt = 0; attempt < 100; attempt++) {
             row = rand.nextInt(6);
             col = rand.nextInt(6);
 
-            // Verificar si la celda está vacía
             if (board[row][col] == 0) {
-                // Elegir un número aleatorio del 1 al 6
                 int number = rand.nextInt(6) + 1;
 
-                // Verificar si el número es válido
                 if (isValidMove(number, row, col)) {
-                    board[row][col] = number; // Colocar el número en el tablero
-                    helpUsed++; // Incrementar el contador de ayudas
-                    break; // Salir después de colocar un número
+                    board[row][col] = number;
+                    helpUsed++;
+                    break;
                 }
             }
         }
     }
 
+    /**
+     * Checks if the given number can be placed in the specified row and column.
+     *
+     * @param number the number to check.
+     * @param row    the row index.
+     * @param col    the column index.
+     * @return true if the move is valid, false otherwise.
+     */
     public boolean isValidMove(int number, int row, int col) {
-        // Comprobar fila y columna
         if (isNumberInRow(row, number) || isNumberInCol(col, number)) {
-            return false; // Movimiento inválido
+            return false;
         }
 
-        // Comprobar subcuadro de 2x3
         int startRow = (row / 2) * 2;
         int startCol = (col / 3) * 3;
 
-        return !isNumberInBlock(startRow, startCol, number); // Retorna verdadero si el movimiento es válido
+        return !isNumberInBlock(startRow, startCol, number);
     }
 
+    /**
+     * Increments the help used counter.
+     */
     public void incrementHelpUsed() {
         helpUsed++;
+    }
+
+    /**
+     * Checks if the board is full (contains no empty cells).
+     *
+     * @return true if the board is full, false otherwise.
+     */
+    public boolean isBoardFull() {
+        for (int row = 0; row < 6; row++) {
+            for (int col = 0; col < 6; col++) {
+                if (board[row][col] == 0) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
+    /**
+     * Clears the board and resets the help used counter.
+     */
+    public void clearBoard() {
+        for (int row = 0; row < board.length; row++) {
+            for (int col = 0; col < board[row].length; col++) {
+                board[row][col] = 0;
+            }
+        }
+        helpUsed = 0;
     }
 }

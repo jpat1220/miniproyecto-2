@@ -48,7 +48,7 @@
                         <Insets bottom="80.0" />
                      </VBox.margin>
                   </Button>
-                  <Button fx:id="restartButton" mnemonicParsing="false" style="-fx-background-color: #8c242f; -fx-border-color: #0d0b0c; -fx-border-radius: 50; -fx-background-radius: 50;" text="Reiniciar" textFill="WHITE">
+                  <Button fx:id="restartButton" mnemonicParsing="false" onAction="#handleRestartButton" style="-fx-background-color: #8c242f; -fx-border-color: #0d0b0c; -fx-border-radius: 50; -fx-background-radius: 50;" text="Reiniciar" textFill="WHITE">
                      <font>
                         <Font name="Berlin Sans FB" size="20.0" />
                      </font>
@@ -59,7 +59,7 @@
                         <DropShadow offsetX="3.0" offsetY="3.0" spread="0.1" />
                      </effect>
                   </Button>
-                  <Button fx:id="exitButton" mnemonicParsing="false" style="-fx-background-color: #8c242f; -fx-border-color: #0d0b0c; -fx-border-radius: 50; -fx-background-radius: 50;" text="Salir" textFill="WHITE">
+                  <Button fx:id="exitButton" mnemonicParsing="false" onAction="#handleExitButton" style="-fx-background-color: #8c242f; -fx-border-color: #0d0b0c; -fx-border-radius: 50; -fx-background-radius: 50;" text="Salir" textFill="WHITE">
                      <font>
                         <Font name="Berlin Sans FB" size="20.0" />
                      </font>

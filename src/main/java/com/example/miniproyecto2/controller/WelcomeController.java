@@ -7,14 +7,20 @@ import javafx.fxml.FXML;
 
 import java.io.IOException;
 
+/**
+ * Controller for the Welcome stage of the Sudoku application.
+ */
 public class WelcomeController {
 
-    // Este método se invoca cuando el usuario presiona el botón "Jugar".
+    /**
+     * Invoked when the user presses the "Play" button.
+     *
+     * @throws IOException if an input or output error occurs.
+     */
     @FXML
     public void handlePlayButton() throws IOException {
         Game game = new Game();
         WelcomeStage.deletedInstance();
         GameStage.getInstance().getGameController().setGame(game);
-
     }
 }
