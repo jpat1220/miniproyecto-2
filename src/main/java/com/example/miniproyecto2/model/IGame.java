@@ -14,15 +14,6 @@ public interface IGame {
     void initializeBoard();
 
     /**
-     * Validates a move made by the player.
-     *
-     * @param move the move to validate.
-     * @param textField the TextField associated with the move.
-     * @return true if the move is valid, false otherwise.
-     */
-    boolean validateMove(String move, TextField textField);
-
-    /**
      * Makes a move on the board.
      *
      * @param move the move to be made.

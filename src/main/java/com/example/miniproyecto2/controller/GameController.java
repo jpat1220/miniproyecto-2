@@ -40,6 +40,7 @@ public class GameController {
         this.game = game;
         initializeBoard();
         updateHelpLabel();
+        showRulesAlert();
     }
 
     /**
@@ -83,26 +84,37 @@ public class GameController {
             @Override
             public void handle(KeyEvent keyEvent) {
                 String inputText = cell.getText();
-
                 if (inputText.matches("[1-6]")) {
-                    if (game.validateMove(Integer.parseInt(cell.getText()),row,col)) {
+                    int number = Integer.parseInt(inputText);
+                    if (game.isValidMove(number, row, col)) {
                         game.makeMove(inputText, row, col);
+                        cell.setStyle("-fx-text-fill: white; -fx-background-color: transparent;");
+
+                        // Imprime la matriz después de hacer el movimiento
+                    } else {
                         cell.setStyle("-fx-text-fill: white; -fx-background-color: transparent;");
                         highlightConflictingNumbers(cell, row, col);
 
-                        if (game.isGameOver()) {
-                            showVictoryMessage();
-                        }
-                    } else {
-                        cell.setStyle("-fx-text-fill: red; -fx-background-color: transparent;");
                     }
                 } else {
                     cell.clear();
                     resetHighlighting();
                 }
+
+                if (game.isBoardFull()) {
+                    if (game.isGameOver()){
+                        showVictoryMessage();
+                    }
+                    else{
+                        showErrorMessage();
+                    }
+                }
             }
+
         });
+
     }
+
 
     /**
      * Highlights conflicting numbers.
@@ -124,8 +136,7 @@ public class GameController {
         for (int i = 0; i < 6; i++) {
             if (i != col) {
                 Node cellNode = getNodeByRowColumnIndex(row, i, gridPane);
-                if (cellNode instanceof TextField) {
-                    TextField cell = (TextField) cellNode;
+                if (cellNode instanceof TextField cell) {
                     if (cell.getText().equals(String.valueOf(currentValue))) {
                         cell.setStyle("-fx-background-color: red;");
                         currentCell.setStyle("-fx-background-color: red;");
@@ -216,40 +227,45 @@ public class GameController {
     /**
      * Handles the help button action.
      */
-    public void handleHelpButton() {
-        if (game.getHelpUsed() < 6) {
-            if (!game.isBoardFull()) {
-                placeRandomHelpNumber();
-                game.incrementHelpUsed();
-                updateHelpLabel();
-            }
-        } else {
-            System.out.println("No quedan ayudas disponibles.");
-        }
-    }
-
     /**
-     * Places a help number in a random empty cell.
+     * Handles the help button action.
      */
-    private void placeRandomHelpNumber() {
-        int[][] board = game.getBoard();
-        Random random = new Random();
-        int row, col;
-        int number;
-
-        do {
-            row = random.nextInt(6);
-            col = random.nextInt(6);
-            number = getValidNumber();
-        } while (!game.isValidMove(number, row, col) || board[row][col] != 0);
-
-        TextField cell = (TextField) getNodeByRowColumnIndex(row, col, gridPane);
-        if (cell != null) {
-            cell.setText(String.valueOf(number));
-            game.makeMove(String.valueOf(number), row, col);
-            highlightConflictingNumbers(cell, row, col);
+    @FXML
+    private void handleHelpButton() {
+        if (game.getHelpUsed() < 6 && !game.isBoardFull()) { // Verifica si aún quedan ayudas
+            boolean numberPlaced = false;
+            int[][] currentBoard = game.getBoard();
+            int[][] answerBoard = game.getAnswerBoard();
+            // Recorre el tablero buscando una posición vacía
+            for (int row = 0; row < 6 && !numberPlaced; row++) {
+                for (int col = 0; col < 6 && !numberPlaced; col++) {
+                    if (currentBoard[row][col] == 0) { // Si la posición está vacía
+                        int correctNumber = answerBoard[row][col];
+                        System.out.println(correctNumber);// Obtiene el número correcto desde answerBoard
+                        game.makeMove(String.valueOf(correctNumber), row, col); // Actualiza el tablero en el modelo
+                        Node node = getNodeByRowColumnIndex(row, col, gridPane); // Encuentra el TextField correspondiente
+                        if (node instanceof TextField cell) {
+                            cell.setText(String.valueOf(correctNumber)); // Coloca el número en la interfaz
+                            cell.setEditable(false);
+                            cell.setStyle("-fx-text-fill: blue; -fx-background-color: null");// Bloquea la celda
+                            game.incrementHelpUsed();
+                        }
+                        updateHelpLabel(); // Actualiza el label de ayudas restantes
+                        numberPlaced = true; // Marca que se ha colocado un número
+                    }
+                }
+            }
+        }
+        if (game.isBoardFull()) {
+            if (game.isGameOver()){
+                showVictoryMessage();
+            }
+            else{
+                showErrorMessage();
+            }
         }
     }
+
 
     /**
      * Gets a valid number between 1 and 6.
@@ -278,6 +294,37 @@ public class GameController {
         alert.showAndWait();
     }
 
+    private void showErrorMessage() {
+        Alert alert = new Alert(Alert.AlertType.INFORMATION);
+        alert.setTitle("¡Error!");
+        alert.setHeaderText(null);
+        alert.setContentText("¡Tu sudoku esta lleno pero hay un error!");
+        alert.showAndWait();
+    }
+
+    @FXML
+    private void showRulesAlert() {
+        Alert alert = new Alert(Alert.AlertType.INFORMATION);
+        alert.setTitle("Reglas del Sudoku 6x6");
+        alert.setHeaderText("Cómo jugar al Sudoku 6x6");
+        alert.setContentText(
+                "El Sudoku 6x6 es un juego de lógica y números.\n\n" +
+                        "Reglas:\n" +
+                        "- El tablero tiene 6 filas y 6 columnas, divididas en bloques de 2x3.\n" +
+                        "- Debes llenar las celdas vacías con números del 1 al 6.\n" +
+                        "- Cada fila, columna y bloque debe contener todos los números del 1 al 6 sin repetir.\n\n" +
+                        "Instrucciones:\n" +
+                        "- Haz clic en una celda vacía y escribe un número del 1 al 6.\n" +
+                        "- Si el número que ingresas es válido, se añadirá al tablero.\n" +
+                        "- Si el número no es valido, se resaltará de color rojo indicando que debes reemplazarlo\n" +
+                        "- Usa las ayudas disponibles si te quedas atascado.\n" +
+                        "- Completa el tablero siguiendo las reglas para ganar el juego.\n\n" +
+                        "¡Diviértete y buena suerte!"
+        );
+        alert.showAndWait();
+    }
+
+
     /**
      * Handles the restart button action.
      *
@@ -290,6 +337,7 @@ public class GameController {
         game.clearBoard();
         game.initializeBoard();
         initializeBoard();
+        game.setHelpUsed();
         updateHelpLabel();
         gridPane.setGridLinesVisible(true);
     }
