@@ -2,12 +2,14 @@ package com.example.miniproyecto2.model;
 
 import java.util.Random;
 
-public class Game {
+public class Game implements IGame {
+
     private int[][] currentBoard;
     private int[][] currentAnswer;
     private int[][][] boards = new int[5][6][6];
     private int[][][] answerBoards = new int[5][6][6];
     private int helpUsed;
+    private int errors;
 
     public Game() {
         initializeDefaultBoards();
@@ -106,11 +108,12 @@ public class Game {
         };
     }
 
-
     /**
      * Selects a random board and its corresponding answer.
      */
+    @Override
     public void initializeBoard() {
+        initializeDefaultBoards();
         Random random = new Random();
         int boardIndex = random.nextInt(5); // Selecciona un tablero entre 0 y 4.
         currentBoard = boards[boardIndex];
@@ -140,69 +143,12 @@ public class Game {
      * @param col the column index.
      * @return true if valid, false otherwise.
      */
-    public boolean validateMove(int number, int row, int col) {
-        // Aquí va la lógica para validar el movimiento según las reglas del Sudoku.
-        return true; // Cambiar a la lógica correcta.
-    }
-
-    /**
-     * Makes a move on the board.
-     * @param number the number to place.
-     * @param row the row index.
-     * @param col the column index.
-     */
-    public void makeMove(String number, int row, int col) {
-        currentBoard[row][col] = Integer.parseInt(number);
-    }
-
-    /**
-     * Checks if the game is over.
-     * @return true if the game is over, false otherwise.
-     */
-    public boolean isGameOver() {
-        // Aquí va la lógica para verificar si el juego ha terminado.
-        return false; // Cambiar a la lógica correcta.
-    }
-
-    /**
-     * Checks if the board is full.
-     * @return true if the board is full, false otherwise.
-     */
-    public boolean isBoardFull() {
-        // Aquí va la lógica para verificar si el tablero está lleno.
-        return false; // Cambiar a la lógica correcta.
-    }
-
-    /**
-     * Increments the help used counter.
-     */
-    public void incrementHelpUsed() {
-        helpUsed++;
-    }
-
-    /**
-     * Gets the number of helps used.
-     * @return the number of helps used.
-     */
-    public int getHelpUsed() {
-        return helpUsed;
-    }
-
-    /**
-     * Clears the board.
-     */
-    public void clearBoard() {
-        currentBoard = new int[6][6]; // Reinicia el tablero a cero o vacío.
-    }
-
     public boolean isValidMove(int number, int row, int col) {
         if (isNumberInRow(row, number) || isNumberInCol(col, number)) {
             return false;
         }
-
         int startRow = (row / 2) * 2;
         int startCol = (col / 3) * 3;
-
         return !isNumberInBlock(startRow, startCol, number);
     }
 
@@ -233,6 +179,161 @@ public class Game {
             }
         }
         return false;
+    }
+
+    /**
+     * Makes a move on the board.
+     * @param number the number to place.
+     * @param row the row index.
+     * @param col the column index.
+     */
+    public void makeMove(String number, int row, int col) {
+        currentBoard[row][col] = Integer.parseInt(number);
+        printCurrentBoard(); // Imprime la matriz después de hacer el movimiento
+    }
+
+    /**
+     * Prints the current board to the console.
+     */
+    public void printCurrentBoard() {
+        for (int i = 0; i < currentBoard.length; i++) {
+            for (int j = 0; j < currentBoard[i].length; j++) {
+                System.out.print(currentBoard[i][j] + " ");
+            }
+            System.out.println();
+        }
+        System.out.println("----------------------------");
+
+    }
+
+    /**
+     * Checks if the game is over.
+     * @return true if the game is over, false otherwise.
+     */
+    public boolean isGameOver() {
+        if (!isBoardFull()) {
+            return false;
+        }
+
+        // Verificar cada fila
+        for (int row = 0; row < 6; row++) {
+            if (!isRowValid(row)) {
+                return false;
+            }
+        }
+
+        // Verificar cada columna
+        for (int col = 0; col < 6; col++) {
+            if (!isColValid(col)) {
+                return false;
+            }
+        }
+
+        // Verificar cada bloque
+        for (int row = 0; row < 6; row += 2) {
+            for (int col = 0; col < 6; col += 3) {
+                if (!isBlockValid(row, col)) {
+                    return false;
+                }
+            }
+        }
+
+        return true;
+    }
+
+    /**
+     * Verifica si una fila es válida.
+     */
+    private boolean isRowValid(int row) {
+        boolean[] seen = new boolean[7]; // Usamos 7 porque los números van del 1 al 6
+        for (int col = 0; col < 6; col++) {
+            int number = currentBoard[row][col];
+            if (number != 0) {
+                if (seen[number]) {
+                    return false;
+                }
+                seen[number] = true;
+            }
+        }
+        return true;
+    }
+
+    /**
+     * Verifica si una columna es válida.
+     */
+    private boolean isColValid(int col) {
+        boolean[] seen = new boolean[7];
+        for (int row = 0; row < 6; row++) {
+            int number = currentBoard[row][col];
+            if (number != 0) {
+                if (seen[number]) {
+                    return false;
+                }
+                seen[number] = true;
+            }
+        }
+        return true;
+    }
+
+    /**
+     * Verifica si un bloque es válido.
+     */
+    private boolean isBlockValid(int startRow, int startCol) {
+        boolean[] seen = new boolean[7];
+        for (int row = startRow; row < startRow + 2; row++) {
+            for (int col = startCol; col < startCol + 3; col++) {
+                int number = currentBoard[row][col];
+                if (number != 0) {
+                    if (seen[number]) {
+                        return false;
+                    }
+                    seen[number] = true;
+                }
+            }
+        }
+        return true;
+    }
+
+
+    /**
+     * Checks if the board is full.
+     * @return true if the board is full, false otherwise.
+     */
+    public boolean isBoardFull() {
+        for (int row = 0; row < 6; row++) {
+            for (int col = 0; col < 6; col++) {
+                if (currentBoard[row][col] == 0) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
+    /**
+     * Increments the help used counter.
+     */
+    public void incrementHelpUsed() {
+        helpUsed++;
+    }
+
+    /**
+     * Gets the number of helps used.
+     * @return the number of helps used.
+     */
+    public int getHelpUsed() {
+        return helpUsed;
+    }
+
+    public void setHelpUsed() {
+        this.helpUsed = 0;
+    }
+
+    /**
+     * Clears the board.
+     */
+    public void clearBoard() {
+        currentBoard = new int[6][6]; // Reinicia el tablero a cero o vacío.
     }
 
 }
