@@ -16,6 +16,7 @@ import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 
 import java.io.IOException;
+import java.util.Objects;
 import java.util.Random;
 
 /**
@@ -61,6 +62,11 @@ public class GameController {
                 styleTextField(cell);
                 gridPane.add(cell, col, row);
                 gridPane.setGridLinesVisible(true);
+                gridPane.setStyle(
+                                "-fx-background-image: url('" + Objects.requireNonNull(getClass().getResource("/com/example/miniproyecto2/img/board-bg.png")).toExternalForm() + "'); " +
+                                        "-fx-background-repeat: repeat;"+
+                                        "-fx-background-size: auto;      "// Esto hace que la imagen se repita
+                );
             }
         }
     }
@@ -79,7 +85,7 @@ public class GameController {
                 String inputText = cell.getText();
 
                 if (inputText.matches("[1-6]")) {
-                    if (game.validateMove(inputText, cell)) {
+                    if (game.validateMove(Integer.parseInt(cell.getText()),row,col)) {
                         game.makeMove(inputText, row, col);
                         cell.setStyle("-fx-text-fill: white; -fx-background-color: transparent;");
                         highlightConflictingNumbers(cell, row, col);

@@ -1,206 +1,200 @@
 package com.example.miniproyecto2.model;
 
-import javafx.scene.control.TextField;
 import java.util.Random;
 
-/**
- * Implements the game logic for the Sudoku application.
- */
-public class Game implements IGame {
-    private int[][] board;
+public class Game {
+    private int[][] currentBoard;
+    private int[][] currentAnswer;
+    private int[][][] boards = new int[5][6][6];
+    private int[][][] answerBoards = new int[5][6][6];
     private int helpUsed;
 
-    /**
-     * Constructs a new Game instance, initializing the board and helpUsed.
-     */
     public Game() {
-        this.board = new int[6][6];
-        this.helpUsed = 0;
+        initializeDefaultBoards();
+        initializeBoard();
+        helpUsed = 0;
     }
 
     /**
-     * Initializes the Sudoku board with valid numbers.
+     * Initializes the default boards and their corresponding answers.
      */
-    @Override
+    private void initializeDefaultBoards() {
+        // Inicializar el board 1
+        boards[0] = new int[][]{
+                {2, 0, 0, 1, 6, 0},
+                {0, 0, 1, 0, 0, 0},
+                {0, 3, 0, 0, 0, 4},
+                {1, 0, 0, 0, 5, 0},
+                {0, 0, 2, 0, 4, 0},
+                {0, 0, 6, 0, 0, 2}
+        };
+        answerBoards[0] = new int[][]{
+                {2, 4, 3, 1, 6, 5},
+                {5, 6, 1, 4, 2, 3},
+                {6, 3, 5, 2, 1, 4},
+                {1, 2, 4, 3, 5, 6},
+                {3, 5, 2, 6, 4, 1},
+                {4, 1, 6, 5, 3, 2}
+        };
+        // Inicializar el board 2
+        boards[1] = new int[][]{
+                {4, 1, 0, 0, 6, 3},
+                {0, 0, 0, 0, 0, 0},
+                {5, 4, 0, 0, 3, 6},
+                {0, 0, 0, 0, 0, 0},
+                {1, 3, 0, 0, 2, 4},
+                {0, 0, 0, 0, 0, 0}
+        };
+        answerBoards[1] = new int[][]{
+                {4, 1, 2, 5, 6, 3},
+                {3, 5, 6, 1, 4, 2},
+                {5, 4, 1, 2, 3, 6},
+                {2, 6, 3, 4, 1, 5},
+                {1, 3, 5, 6, 2, 4},
+                {6, 2, 4, 3, 5, 1}
+        };
+        // Inicializar el board 3
+        boards[2] = new int[][]{
+                {0, 2, 0, 0, 3, 0},
+                {0, 4, 0, 0, 6, 0},
+                {0, 3, 0, 0, 0, 6},
+                {0, 5, 0, 0, 4, 0},
+                {0, 6, 0, 1, 0, 4},
+                {0, 1, 0, 0, 0, 0}
+        };
+        answerBoards[2] = new int[][]{
+                {1, 2, 6, 4, 3, 5},
+                {3, 4, 5, 2, 6, 1},
+                {4, 3, 2, 5, 1, 6},
+                {6, 5, 1, 3, 4, 2},
+                {2, 6, 3, 1, 5, 4},
+                {5, 1, 4, 6, 2, 3}
+        };
+        // Inicializar el board 4
+        boards[3] = new int[][]{
+                {1, 0, 0, 0, 0, 6},
+                {0, 5, 0, 0, 3, 0},
+                {0, 0, 3, 1, 0, 0},
+                {0, 0, 1, 3, 0, 0},
+                {0, 2, 0, 0, 1, 0},
+                {3, 0, 0, 0, 0, 4}
+        };
+        answerBoards[3] = new int[][]{
+                {1, 3, 2, 4, 5, 6},
+                {4, 5, 6, 2, 3, 1},
+                {2, 6, 3, 1, 4, 5},
+                {5, 4, 1, 3, 6, 2},
+                {6, 2, 4, 5, 1, 3},
+                {3, 1, 5, 6, 2, 4}
+        };
+        // Inicializar el board 5
+        boards[4] = new int[][]{
+                {0, 2, 0, 0, 5, 0},
+                {0, 0, 6, 0, 1, 0},
+                {2, 0, 0, 3, 0, 0},
+                {3, 0, 0, 0, 0, 4},
+                {0, 3, 0, 6, 0, 2},
+                {0, 0, 1, 0, 0, 0}
+        };
+        answerBoards[4] = new int[][]{
+                {1, 2, 3, 4, 5, 6},
+                {4, 5, 6, 1, 2, 3},
+                {2, 1, 4, 3, 6, 5},
+                {3, 6, 5, 2, 1, 4},
+                {5, 3, 1, 6, 4, 2},
+                {6, 4, 2, 5, 3, 1}
+        };
+    }
+
+
+    /**
+     * Selects a random board and its corresponding answer.
+     */
     public void initializeBoard() {
-        fillBoard();
+        Random random = new Random();
+        int boardIndex = random.nextInt(5); // Selecciona un tablero entre 0 y 4.
+        currentBoard = boards[boardIndex];
+        currentAnswer = answerBoards[boardIndex];
     }
 
     /**
-     * Validates the move made in the given TextField.
-     *
-     * @param move     the move to validate as a String.
-     * @param textField the TextField associated with the move.
-     * @return true if the move is valid (1 to 6), false otherwise.
+     * Returns the current board being played.
+     * @return the current board.
      */
-    @Override
-    public boolean validateMove(String move, TextField textField) {
-        if (move == null || move.isEmpty()) {
-            return false; // Return false if move is null or empty
-        }
-        // Check if the move is a valid integer within the range 1 to 6
-        return move.matches("[1-6]");
-    }
-
-    /**
-     * Makes a move on the board at the specified row and column.
-     *
-     * @param move the value to place on the board.
-     * @param row  the row where the move will be made.
-     * @param col  the column where the move will be made.
-     */
-    @Override
-    public void makeMove(String move, int row, int col) {
-        int value = Integer.parseInt(move);
-        if (isValidMove(value, row, col)) {
-            board[row][col] = value;
-        }
-    }
-
-    /**
-     * Gets the current state of the board.
-     *
-     * @return a 2D array representing the board.
-     */
-    @Override
     public int[][] getBoard() {
-        return board;
+        return currentBoard;
     }
 
     /**
-     * Gets the number of help used in the game.
-     *
-     * @return the count of help used.
+     * Returns the answer to the current board.
+     * @return the answer board.
      */
-    @Override
+    public int[][] getAnswerBoard() {
+        return currentAnswer;
+    }
+
+    /**
+     * Validates if the move is valid.
+     * @param number the number to be placed.
+     * @param row the row index.
+     * @param col the column index.
+     * @return true if valid, false otherwise.
+     */
+    public boolean validateMove(int number, int row, int col) {
+        // Aquí va la lógica para validar el movimiento según las reglas del Sudoku.
+        return true; // Cambiar a la lógica correcta.
+    }
+
+    /**
+     * Makes a move on the board.
+     * @param number the number to place.
+     * @param row the row index.
+     * @param col the column index.
+     */
+    public void makeMove(String number, int row, int col) {
+        currentBoard[row][col] = Integer.parseInt(number);
+    }
+
+    /**
+     * Checks if the game is over.
+     * @return true if the game is over, false otherwise.
+     */
+    public boolean isGameOver() {
+        // Aquí va la lógica para verificar si el juego ha terminado.
+        return false; // Cambiar a la lógica correcta.
+    }
+
+    /**
+     * Checks if the board is full.
+     * @return true if the board is full, false otherwise.
+     */
+    public boolean isBoardFull() {
+        // Aquí va la lógica para verificar si el tablero está lleno.
+        return false; // Cambiar a la lógica correcta.
+    }
+
+    /**
+     * Increments the help used counter.
+     */
+    public void incrementHelpUsed() {
+        helpUsed++;
+    }
+
+    /**
+     * Gets the number of helps used.
+     * @return the number of helps used.
+     */
     public int getHelpUsed() {
         return helpUsed;
     }
 
     /**
-     * Checks if the game is over by verifying if the board is full and valid.
-     *
-     * @return true if the game is over, false otherwise.
+     * Clears the board.
      */
-    @Override
-    public boolean isGameOver() {
-        if (isBoardFull()) {
-            for (int row = 0; row < 6; row++) {
-                for (int col = 0; col < 6; col++) {
-                    int number = board[row][col];
-                    if (isNumberInRow(row, number) ||
-                            isNumberInCol(col, number) ||
-                            isNumberInBlock((row / 2) * 2, (col / 3) * 3, number)) {
-                        return false;
-                    }
-                }
-            }
-            return true;
-        }
-        return false;
+    public void clearBoard() {
+        currentBoard = new int[6][6]; // Reinicia el tablero a cero o vacío.
     }
 
-    private void fillBoard() {
-        Random random = new Random();
-        for (int row = 0; row < 6; row++) {
-            for (int col = 0; col < 6; col++) {
-                board[row][col] = 0;
-            }
-        }
-        for (int blockRow = 0; blockRow < 3; blockRow++) {
-            for (int blockCol = 0; blockCol < 2; blockCol++) {
-                placeNumbersInBlock(blockRow * 2, blockCol * 3, random);
-            }
-        }
-    }
-
-    private void placeNumbersInBlock(int startRow, int startCol, Random random) {
-        int[] numbers = {1, 2, 3, 4, 5, 6};
-        int count = 0;
-
-        while (count < 2) {
-            int number = numbers[random.nextInt(6)];
-            boolean placedSuccessfully = false;
-
-            for (int row = startRow; row < startRow + 2; row++) {
-                for (int col = startCol; col < startCol + 3; col++) {
-                    if (board[row][col] == 0 &&
-                            !isNumberInRow(row, number) &&
-                            !isNumberInCol(col, number) &&
-                            !isNumberInBlock(startRow, startCol, number)) {
-                        board[row][col] = number;
-                        placedSuccessfully = true;
-                        count++;
-                        break;
-                    }
-                }
-                if (placedSuccessfully) {
-                    break;
-                }
-            }
-        }
-    }
-
-    private boolean isNumberInRow(int row, int number) {
-        for (int col = 0; col < 6; col++) {
-            if (board[row][col] == number) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    private boolean isNumberInCol(int col, int number) {
-        for (int row = 0; row < 6; row++) {
-            if (board[row][col] == number) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    private boolean isNumberInBlock(int startRow, int startCol, int number) {
-        for (int row = startRow; row < startRow + 2; row++) {
-            for (int col = startCol; col < startCol + 3; col++) {
-                if (board[row][col] == number) {
-                    return true;
-                }
-            }
-        }
-        return false;
-    }
-
-    /**
-     * Makes a help move by placing a number in a random empty position.
-     */
-    public void makeHelpMove() {
-        Random rand = new Random();
-        int row, col;
-
-        for (int attempt = 0; attempt < 100; attempt++) {
-            row = rand.nextInt(6);
-            col = rand.nextInt(6);
-
-            if (board[row][col] == 0) {
-                int number = rand.nextInt(6) + 1;
-
-                if (isValidMove(number, row, col)) {
-                    board[row][col] = number;
-                    helpUsed++;
-                    break;
-                }
-            }
-        }
-    }
-
-    /**
-     * Checks if the given number can be placed in the specified row and column.
-     *
-     * @param number the number to check.
-     * @param row    the row index.
-     * @param col    the column index.
-     * @return true if the move is valid, false otherwise.
-     */
     public boolean isValidMove(int number, int row, int col) {
         if (isNumberInRow(row, number) || isNumberInCol(col, number)) {
             return false;
@@ -212,38 +206,33 @@ public class Game implements IGame {
         return !isNumberInBlock(startRow, startCol, number);
     }
 
-    /**
-     * Increments the help used counter.
-     */
-    public void incrementHelpUsed() {
-        helpUsed++;
+    private boolean isNumberInRow(int row, int number) {
+        for (int col = 0; col < 6; col++) {
+            if (currentBoard[row][col] == number) {
+                return true;
+            }
+        }
+        return false;
     }
 
-    /**
-     * Checks if the board is full (contains no empty cells).
-     *
-     * @return true if the board is full, false otherwise.
-     */
-    public boolean isBoardFull() {
+    private boolean isNumberInCol(int col, int number) {
         for (int row = 0; row < 6; row++) {
-            for (int col = 0; col < 6; col++) {
-                if (board[row][col] == 0) {
-                    return false;
+            if (currentBoard[row][col] == number) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private boolean isNumberInBlock(int startRow, int startCol, int number) {
+        for (int row = startRow; row < startRow + 2; row++) {
+            for (int col = startCol; col < startCol + 3; col++) {
+                if (currentBoard[row][col] == number) {
+                    return true;
                 }
             }
         }
-        return true;
+        return false;
     }
 
-    /**
-     * Clears the board and resets the help used counter.
-     */
-    public void clearBoard() {
-        for (int row = 0; row < board.length; row++) {
-            for (int col = 0; col < board[row].length; col++) {
-                board[row][col] = 0;
-            }
-        }
-        helpUsed = 0;
-    }
 }
