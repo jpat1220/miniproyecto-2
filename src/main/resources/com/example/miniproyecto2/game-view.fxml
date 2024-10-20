@@ -78,7 +78,7 @@
                   <Insets left="10.0" />
                </HBox.margin>
             </VBox>
-            <GridPane fx:id="gridPane" gridLinesVisible="true" maxHeight="-Infinity" maxWidth="-Infinity" prefHeight="282.0" prefWidth="304.0" style="-fx-background-color: rgb(137,36,47,0.5);">
+            <GridPane fx:id="gridPane" gridLinesVisible="true" maxHeight="-Infinity" maxWidth="-Infinity" prefHeight="282.0" prefWidth="304.0">
               <columnConstraints>
                   <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
                   <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
