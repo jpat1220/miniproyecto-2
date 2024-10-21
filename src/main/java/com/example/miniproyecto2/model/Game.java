@@ -9,19 +9,22 @@ public class Game implements IGame {
     private int[][][] boards = new int[5][6][6];
     private int[][][] answerBoards = new int[5][6][6];
     private int helpUsed;
-    private int errors;
 
+    /**
+     * Constructs a new Game instance, initializes the default boards,
+     * selects a random board, and sets the initial help count to zero.
+     */
     public Game() {
         initializeDefaultBoards();
         initializeBoard();
         helpUsed = 0;
     }
 
+
     /**
      * Initializes the default boards and their corresponding answers.
      */
     private void initializeDefaultBoards() {
-        // Inicializar el board 1
         boards[0] = new int[][]{
                 {2, 0, 0, 1, 6, 0},
                 {0, 0, 1, 0, 0, 0},
@@ -38,7 +41,6 @@ public class Game implements IGame {
                 {3, 5, 2, 6, 4, 1},
                 {4, 1, 6, 5, 3, 2}
         };
-        // Inicializar el board 2
         boards[1] = new int[][]{
                 {4, 1, 0, 0, 6, 3},
                 {0, 0, 0, 0, 0, 0},
@@ -55,7 +57,6 @@ public class Game implements IGame {
                 {1, 3, 5, 6, 2, 4},
                 {6, 2, 4, 3, 5, 1}
         };
-        // Inicializar el board 3
         boards[2] = new int[][]{
                 {0, 2, 0, 0, 3, 0},
                 {0, 4, 0, 0, 6, 0},
@@ -72,7 +73,6 @@ public class Game implements IGame {
                 {2, 6, 3, 1, 5, 4},
                 {5, 1, 4, 6, 2, 3}
         };
-        // Inicializar el board 4
         boards[3] = new int[][]{
                 {1, 0, 0, 0, 0, 6},
                 {0, 5, 0, 0, 3, 0},
@@ -89,7 +89,6 @@ public class Game implements IGame {
                 {6, 2, 4, 5, 1, 3},
                 {3, 1, 5, 6, 2, 4}
         };
-        // Inicializar el board 5
         boards[4] = new int[][]{
                 {0, 2, 0, 0, 5, 0},
                 {0, 0, 6, 0, 1, 0},
@@ -115,13 +114,14 @@ public class Game implements IGame {
     public void initializeBoard() {
         initializeDefaultBoards();
         Random random = new Random();
-        int boardIndex = random.nextInt(5); // Selecciona un tablero entre 0 y 4.
+        int boardIndex = random.nextInt(5);
         currentBoard = boards[boardIndex];
         currentAnswer = answerBoards[boardIndex];
     }
 
     /**
      * Returns the current board being played.
+     *
      * @return the current board.
      */
     public int[][] getBoard() {
@@ -130,6 +130,7 @@ public class Game implements IGame {
 
     /**
      * Returns the answer to the current board.
+     *
      * @return the answer board.
      */
     public int[][] getAnswerBoard() {
@@ -138,10 +139,11 @@ public class Game implements IGame {
 
     /**
      * Validates if the move is valid.
+     *
      * @param number the number to be placed.
      * @param row the row index.
      * @param col the column index.
-     * @return true if valid, false otherwise.
+     * @return true if the move is valid, false otherwise.
      */
     public boolean isValidMove(int number, int row, int col) {
         if (isNumberInRow(row, number) || isNumberInCol(col, number)) {
@@ -152,6 +154,13 @@ public class Game implements IGame {
         return !isNumberInBlock(startRow, startCol, number);
     }
 
+    /**
+     * Checks if a number is present in a specified row.
+     *
+     * @param row the row index.
+     * @param number the number to check.
+     * @return true if the number is in the row, false otherwise.
+     */
     private boolean isNumberInRow(int row, int number) {
         for (int col = 0; col < 6; col++) {
             if (currentBoard[row][col] == number) {
@@ -161,6 +170,13 @@ public class Game implements IGame {
         return false;
     }
 
+    /**
+     * Checks if a number is present in a specified column.
+     *
+     * @param col the column index.
+     * @param number the number to check.
+     * @return true if the number is in the column, false otherwise.
+     */
     private boolean isNumberInCol(int col, int number) {
         for (int row = 0; row < 6; row++) {
             if (currentBoard[row][col] == number) {
@@ -170,6 +186,14 @@ public class Game implements IGame {
         return false;
     }
 
+    /**
+     * Checks if a number is present in a specified block.
+     *
+     * @param startRow the starting row index of the block.
+     * @param startCol the starting column index of the block.
+     * @param number the number to check.
+     * @return true if the number is in the block, false otherwise.
+     */
     private boolean isNumberInBlock(int startRow, int startCol, int number) {
         for (int row = startRow; row < startRow + 2; row++) {
             for (int col = startCol; col < startCol + 3; col++) {
@@ -183,13 +207,15 @@ public class Game implements IGame {
 
     /**
      * Makes a move on the board.
+     *
      * @param number the number to place.
      * @param row the row index.
      * @param col the column index.
      */
+    @Override
     public void makeMove(String number, int row, int col) {
         currentBoard[row][col] = Integer.parseInt(number);
-        printCurrentBoard(); // Imprime la matriz después de hacer el movimiento
+        printCurrentBoard();
     }
 
     /**
@@ -203,33 +229,33 @@ public class Game implements IGame {
             System.out.println();
         }
         System.out.println("----------------------------");
-
     }
 
+
     /**
-     * Checks if the game is over.
+     * Checks if the game is over by verifying if the board is full and
+     * all rows, columns, and blocks are valid.
+     *
      * @return true if the game is over, false otherwise.
      */
+    @Override
     public boolean isGameOver() {
         if (!isBoardFull()) {
             return false;
         }
 
-        // Verificar cada fila
         for (int row = 0; row < 6; row++) {
             if (!isRowValid(row)) {
                 return false;
             }
         }
 
-        // Verificar cada columna
         for (int col = 0; col < 6; col++) {
             if (!isColValid(col)) {
                 return false;
             }
         }
 
-        // Verificar cada bloque
         for (int row = 0; row < 6; row += 2) {
             for (int col = 0; col < 6; col += 3) {
                 if (!isBlockValid(row, col)) {
@@ -242,10 +268,14 @@ public class Game implements IGame {
     }
 
     /**
-     * Verifica si una fila es válida.
+     * Checks if a specified row is valid by ensuring all numbers from 1 to 6
+     * appear only once.
+     *
+     * @param row the row index.
+     * @return true if the row is valid, false otherwise.
      */
     private boolean isRowValid(int row) {
-        boolean[] seen = new boolean[7]; // Usamos 7 porque los números van del 1 al 6
+        boolean[] seen = new boolean[7]; // Using 7 because numbers range from 1 to 6
         for (int col = 0; col < 6; col++) {
             int number = currentBoard[row][col];
             if (number != 0) {
@@ -259,7 +289,11 @@ public class Game implements IGame {
     }
 
     /**
-     * Verifica si una columna es válida.
+     * Checks if a specified column is valid by ensuring all numbers from 1 to 6
+     * appear only once.
+     *
+     * @param col the column index.
+     * @return true if the column is valid, false otherwise.
      */
     private boolean isColValid(int col) {
         boolean[] seen = new boolean[7];
@@ -276,7 +310,12 @@ public class Game implements IGame {
     }
 
     /**
-     * Verifica si un bloque es válido.
+     * Checks if a specified block is valid by ensuring all numbers from 1 to 6
+     * appear only once.
+     *
+     * @param startRow the starting row index of the block.
+     * @param startCol the starting column index of the block.
+     * @return true if the block is valid, false otherwise.
      */
     private boolean isBlockValid(int startRow, int startCol) {
         boolean[] seen = new boolean[7];
@@ -297,6 +336,7 @@ public class Game implements IGame {
 
     /**
      * Checks if the board is full.
+     *
      * @return true if the board is full, false otherwise.
      */
     public boolean isBoardFull() {
@@ -319,21 +359,26 @@ public class Game implements IGame {
 
     /**
      * Gets the number of helps used.
+     *
      * @return the number of helps used.
      */
+    @Override
     public int getHelpUsed() {
         return helpUsed;
     }
 
+    /**
+     * Resets the help used counter to zero.
+     */
     public void setHelpUsed() {
         this.helpUsed = 0;
     }
 
     /**
-     * Clears the board.
+     * Clears the board by resetting it to a zero-filled state.
      */
     public void clearBoard() {
-        currentBoard = new int[6][6]; // Reinicia el tablero a cero o vacío.
+        currentBoard = new int[6][6];
     }
 
 }

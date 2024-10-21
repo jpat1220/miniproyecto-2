@@ -10,7 +10,7 @@ import javafx.stage.Stage;
 import java.io.IOException;
 
 /**
- * Represents the game stage for the "El Sol Eclipsado" application.
+ * Represents the game stage for the "Sudoku!" application.
  * This class extends the Stage class and initializes the main game view.
  */
 public class GameStage extends Stage {

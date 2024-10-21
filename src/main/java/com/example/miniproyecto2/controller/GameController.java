@@ -12,12 +12,10 @@ import javafx.scene.input.KeyEvent;
 import javafx.event.EventHandler;
 import javafx.scene.layout.GridPane;
 import javafx.scene.Node;
-import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 
 import java.io.IOException;
 import java.util.Objects;
-import java.util.Random;
 
 /**
  * Controller for the Game stage of the Sudoku application.
@@ -32,7 +30,8 @@ public class GameController {
     private Label helpLabel;
 
     /**
-     * Initializes the game.
+     * Initializes the game by setting the current Game instance, initializing the board,
+     * updating the help label, and displaying the rules alert.
      *
      * @param game the Game instance to be set.
      */
@@ -43,13 +42,14 @@ public class GameController {
         showRulesAlert();
     }
 
+
     /**
-     * Initializes the board in the graphical interface.
+     * Initializes the board in the graphical interface by setting up text fields
+     * for each cell based on the current board state.
      */
     private void initializeBoard() {
         game.initializeBoard();
         int[][] board = game.getBoard();
-
         for (int row = 0; row < board.length; row++) {
             for (int col = 0; col < board[row].length; col++) {
                 TextField cell = new TextField();
@@ -64,20 +64,24 @@ public class GameController {
                 gridPane.add(cell, col, row);
                 gridPane.setGridLinesVisible(true);
                 gridPane.setStyle(
-                                "-fx-background-image: url('" + Objects.requireNonNull(getClass().getResource("/com/example/miniproyecto2/img/board-bg.png")).toExternalForm() + "'); " +
-                                        "-fx-background-repeat: repeat;"+
-                                        "-fx-background-size: auto;      "// Esto hace que la imagen se repita
+                        "-fx-background-image: url('" +
+                                Objects.requireNonNull(getClass().getResource("/com/example/miniproyecto2/img/board-bg.png")).toExternalForm() + "'); " +
+                                "-fx-background-repeat: repeat;" +
+                                "-fx-background-size: auto;"
                 );
             }
         }
     }
 
+
     /**
-     * Handles the events of the cells.
+     * Handles the events of the specified text field by setting up a key
+     * released event handler. Validates the input and updates the board
+     * accordingly.
      *
      * @param cell the TextField representing the cell.
-     * @param row  the row index of the cell.
-     * @param col  the column index of the cell.
+     * @param row the row index of the cell.
+     * @param col the column index of the cell.
      */
     private void handleTextField(TextField cell, int row, int col) {
         cell.setOnKeyReleased(new EventHandler<KeyEvent>() {
@@ -89,39 +93,34 @@ public class GameController {
                     if (game.isValidMove(number, row, col)) {
                         game.makeMove(inputText, row, col);
                         cell.setStyle("-fx-text-fill: white; -fx-background-color: transparent;");
-
-                        // Imprime la matriz después de hacer el movimiento
                     } else {
                         cell.setStyle("-fx-text-fill: white; -fx-background-color: transparent;");
                         highlightConflictingNumbers(cell, row, col);
-
                     }
                 } else {
                     cell.clear();
                     resetHighlighting();
                 }
-
                 if (game.isBoardFull()) {
-                    if (game.isGameOver()){
+                    if (game.isGameOver()) {
                         showVictoryMessage();
-                    }
-                    else{
+                    } else {
                         showErrorMessage();
                     }
                 }
             }
-
         });
-
     }
 
 
+
     /**
-     * Highlights conflicting numbers.
+     * Highlights conflicting numbers on the board by changing the background
+     * color of conflicting cells to red.
      *
      * @param currentCell the TextField representing the current cell.
-     * @param row         the row index of the current cell.
-     * @param col         the column index of the current cell.
+     * @param row the row index of the current cell.
+     * @param col the column index of the current cell.
      */
     private void highlightConflictingNumbers(TextField currentCell, int row, int col) {
         int currentValue;
@@ -173,11 +172,12 @@ public class GameController {
         }
     }
 
+
     /**
-     * Gets the node by its row and column index.
+     * Gets the node by its row and column index within the specified grid pane.
      *
-     * @param row      the row index of the node.
-     * @param col      the column index of the node.
+     * @param row the row index of the node.
+     * @param col the column index of the node.
      * @param gridPane the GridPane containing the nodes.
      * @return the Node if found, null otherwise.
      */
@@ -185,14 +185,12 @@ public class GameController {
         for (Node node : gridPane.getChildren()) {
             Integer nodeRowIndex = GridPane.getRowIndex(node);
             Integer nodeColIndex = GridPane.getColumnIndex(node);
-
             if (nodeRowIndex == null) {
                 nodeRowIndex = 0;
             }
             if (nodeColIndex == null) {
                 nodeColIndex = 0;
             }
-
             if (nodeRowIndex == row && nodeColIndex == col) {
                 return node;
             }
@@ -200,8 +198,10 @@ public class GameController {
         return null;
     }
 
+
     /**
-     * Applies styles to the TextFields.
+     * Applies styles to the specified text field, including setting the font,
+     * background color, text color, size, and alignment.
      *
      * @param cell the TextField to be styled.
      */
@@ -213,8 +213,10 @@ public class GameController {
         cell.setAlignment(javafx.geometry.Pos.CENTER);
     }
 
+
     /**
-     * Resets the highlighting of cells.
+     * Resets the highlighting of all text fields in the grid pane by setting their
+     * background color to transparent and text color to white.
      */
     private void resetHighlighting() {
         for (Node node : gridPane.getChildren()) {
@@ -224,57 +226,49 @@ public class GameController {
         }
     }
 
+
     /**
-     * Handles the help button action.
-     */
-    /**
-     * Handles the help button action.
+     * Handles the help button action, providing a hint by placing a correct
+     * number in an empty cell. If the board is full after the hint, checks if
+     * the game is over or if there is an error.
      */
     @FXML
     private void handleHelpButton() {
-        if (game.getHelpUsed() < 6 && !game.isBoardFull()) { // Verifica si aún quedan ayudas
+        if (game.getHelpUsed() < 6 && !game.isBoardFull()) {
             boolean numberPlaced = false;
             int[][] currentBoard = game.getBoard();
             int[][] answerBoard = game.getAnswerBoard();
-            // Recorre el tablero buscando una posición vacía
+
             for (int row = 0; row < 6 && !numberPlaced; row++) {
                 for (int col = 0; col < 6 && !numberPlaced; col++) {
-                    if (currentBoard[row][col] == 0) { // Si la posición está vacía
+                    if (currentBoard[row][col] == 0) {
                         int correctNumber = answerBoard[row][col];
-                        System.out.println(correctNumber);// Obtiene el número correcto desde answerBoard
-                        game.makeMove(String.valueOf(correctNumber), row, col); // Actualiza el tablero en el modelo
-                        Node node = getNodeByRowColumnIndex(row, col, gridPane); // Encuentra el TextField correspondiente
+                        System.out.println(correctNumber);
+                        game.makeMove(String.valueOf(correctNumber), row, col);
+                        Node node = getNodeByRowColumnIndex(row, col, gridPane);
+
                         if (node instanceof TextField cell) {
-                            cell.setText(String.valueOf(correctNumber)); // Coloca el número en la interfaz
+                            cell.setText(String.valueOf(correctNumber));
                             cell.setEditable(false);
-                            cell.setStyle("-fx-text-fill: blue; -fx-background-color: null");// Bloquea la celda
+                            cell.setStyle("-fx-text-fill: blue; -fx-background-color: null");
                             game.incrementHelpUsed();
                         }
-                        updateHelpLabel(); // Actualiza el label de ayudas restantes
-                        numberPlaced = true; // Marca que se ha colocado un número
+                        updateHelpLabel();
+                        numberPlaced = true;
                     }
                 }
             }
         }
+
         if (game.isBoardFull()) {
             if (game.isGameOver()){
                 showVictoryMessage();
-            }
-            else{
+            } else {
                 showErrorMessage();
             }
         }
     }
 
-
-    /**
-     * Gets a valid number between 1 and 6.
-     *
-     * @return a random number between 1 and 6.
-     */
-    private int getValidNumber() {
-        return new Random().nextInt(6) + 1;
-    }
 
     /**
      * Updates the help label.
@@ -284,7 +278,8 @@ public class GameController {
     }
 
     /**
-     * Shows a victory message.
+     * Displays a victory message indicating that the Sudoku puzzle has been
+     * successfully completed.
      */
     private void showVictoryMessage() {
         Alert alert = new Alert(Alert.AlertType.INFORMATION);
@@ -294,6 +289,10 @@ public class GameController {
         alert.showAndWait();
     }
 
+    /**
+     * Displays an error message indicating that the Sudoku board is full
+     * but contains an error.
+     */
     private void showErrorMessage() {
         Alert alert = new Alert(Alert.AlertType.INFORMATION);
         alert.setTitle("¡Error!");
@@ -302,6 +301,10 @@ public class GameController {
         alert.showAndWait();
     }
 
+
+    /**
+     * Displays an alert with the rules and instructions for playing Sudoku 6x6.
+     */
     @FXML
     private void showRulesAlert() {
         Alert alert = new Alert(Alert.AlertType.INFORMATION);
@@ -324,9 +327,9 @@ public class GameController {
         alert.showAndWait();
     }
 
-
     /**
-     * Handles the restart button action.
+     * Handles the restart button action, resetting the game board and
+     * reinitializing it.
      *
      * @param event the ActionEvent triggered by the button.
      * @throws IOException if an input or output error occurs.
@@ -342,8 +345,9 @@ public class GameController {
         gridPane.setGridLinesVisible(true);
     }
 
+
     /**
-     * Handles the exit button action.
+     * Handles the exit button action, terminating the current game stage.
      *
      * @param event the ActionEvent triggered by the button.
      * @throws IOException if an input or output error occurs.
@@ -351,6 +355,6 @@ public class GameController {
     @FXML
     public void handleExitButton(ActionEvent event) throws IOException {
         GameStage.deletedInstance();
-
     }
+
 }
